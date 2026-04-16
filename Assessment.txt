@@ -1,0 +1,59 @@
+Requirements:
+
+Take-Home Assignment
+Build a Simple Chat Experience
+What we’re looking for
+We’d like you to build a simple chat experience that feels like something real users could use.
+Imagine you’re building a lightweight chat feature for a product — something that allows people to
+communicate with each other instantly.
+This is not just about making it work, but about how you think through the experience, trade-offs,
+and overall quality.
+The Problem
+Users should be able to open a web page and chat with each other in real time.
+Messages should appear instantly without needing to refresh the page.
+Beyond that, we’re intentionally leaving things open for you to decide.
+What the experience should roughly support
+At a minimum, users should be able to:
+• Send messages
+• See messages from others appear live
+• Understand who sent which message
+Everything else is up to you.
+For example:
+• Should messages be saved or disappear on refresh?
+• Should users have names or identities?
+• Should there be one chat or multiple conversations?
+There’s no single correct answer — we’re interested in how you think about these decisions.
+Make it feel like a real product
+We’d like you to go a bit beyond the basics and add at least one feature that improves the
+experience.
+More important than the feature itself is:
+• Why you chose it
+• How it improves the experience
+What we care about
+We’re not expecting a polished production app, but we do care about:
+• Clarity – Is it easy to understand and use?
+• Thoughtfulness – Did you make intentional decisions?
+• Reliability – Does it work smoothly?
+• Simplicity – Did you avoid unnecessary complexity?
+Final note
+There’s intentionally some ambiguity in this assignment. In real product work, requirements are
+often not fully defined — we’re interested in how you navigate that.
+
+
+
+JD:
+HI
+
+As discussed, please find the details about company and role-
+
+About Radius
+
+Radius is a fast-growing proptech startup revolutionizing how real estate professionals work. We're building technology that empowers brokerages and agents to be more efficient, data-driven, and successful in their business.
+
+
+We’re looking for a Full Stack Engineer with strong AI exposure to join a product-driven team. You’ll work across the stack and lifecycle—own features end-to-end, and operate in a fast-moving, product-first environment.
+Your responsibilities in this role include, but are not limited to: • Owning features end-to-end — from design and implementation to deployment and production support. • Building and scaling backend systems across APIs, real-time messaging, background jobs, and AI/agent workflows. • Designing reliable, maintainable systems with a strong focus on performance and simplicity. • Debugging and improving production systems using logs, monitoring, and observability tools. • Writing clean code, reviewing PRs, and improving overall code quality pragmatically. • Collaborating closely with product and engineering to translate requirements into working systems. • Continuously improving systems, developer velocity, and engineering practices. • Working independently in ambiguous, fast-paced environments with high ownership.
+Requirements • 4–8+ years of experience building backend systems in production environments. • Strong fundamentals in system design, APIs, and distributed systems. • Experience working in fast-paced environments with high ownership. • Ability to work across different stacks and pick up new technologies quickly. • Comfortable owning systems in production (debugging, monitoring, scaling). • Product mindset — ability to translate real-world problems into practical solutions. • Hands-on experience building AI/LLM-powered systems (agents, tool calling, workflows).
+You must have strong experience in at least some of the following: Frontend: React, Redux  Backend: Python Databases: MySQL, MongoDB, Redis  Infra: AWS, GCP, Docker
+Nice to have • Experience with Redis, queues, or caching systems • Experience with real-time chat or messaging systems • Experience working in product-driven startups or fast-moving teams
+What we value (important) • Engineers who figure things out instead of waiting for instructions • Strong ownership and bias for action • Ability to balance speed with quality • Curiosity about both product and technology
