@@ -6,9 +6,11 @@ services:
       context: ./backend
     ports:
       - "8000:8000"
+    environment:
+      - DB_DIR=/app/data
     volumes:
-      # Optional: persist the local chat.db SQLite database
-      - ./backend/chat.db:/app/chat.db
+      # Use a named volume to safely persist sqlite without path resolution errors
+      - chat-data:/app/data
 
   frontend:
     build:
@@ -17,3 +19,6 @@ services:
       - "5173:80"
     depends_on:
       - backend
+
+volumes:
+  chat-data:
