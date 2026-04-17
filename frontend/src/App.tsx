@@ -9,6 +9,7 @@ function App() {
   const [newContactUsername, setNewContactUsername] = useState('')
   const [contacts, setContacts] = useState<string[]>([])
   const [chatError, setChatError] = useState('')
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (session) {
@@ -17,6 +18,13 @@ function App() {
         .then(data => {
             const users = data.map((u: any) => u.username).filter((u: string) => u !== session.username)
             setContacts(users)
+        })
+        .catch(console.error)
+        
+      fetch(`/api/chat/unread?user=${encodeURIComponent(session.username)}`)
+        .then(res => res.json())
+        .then(data => {
+            setUnreadCounts(data.counts || {})
         })
         .catch(console.error)
         
@@ -34,12 +42,32 @@ function App() {
                       return prev;
                   });
               }
+              // Track unread if not currently looking at them
+              if (payload.sender !== session.username) {
+                  setUnreadCounts(prev => {
+                      // If we are currently selected on this contact, we assume it's read immediately
+                      // Note: selectedContact state might be stale in this closure, 
+                      // but we handle clearing it in a separate effect
+                      return { ...prev, [payload.sender]: (prev[payload.sender] || 0) + 1 }
+                  })
+              }
            }
         } catch (e) {}
       }
       return () => ws.close()
     }
   }, [session])
+
+  useEffect(() => {
+      // Clear unread counts for the currently selected active contact
+      if (selectedContact && unreadCounts[selectedContact] > 0) {
+          setUnreadCounts(prev => {
+              const newCounts = { ...prev }
+              delete newCounts[selectedContact]
+              return newCounts
+          })
+      }
+  }, [selectedContact, unreadCounts])
 
   const handleLogin = (token: string, username: string) => {
     setSession({ token, username })
@@ -80,13 +108,13 @@ function App() {
   return (
     <div className="flex h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-emerald-500/30">
       {/* Sidebar */}
-      <aside className="w-80 bg-neutral-900 border-r border-neutral-800 flex flex-col">
+      <aside className={`w-full md:w-80 bg-neutral-900 border-r border-neutral-800 flex-col ${selectedContact ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-neutral-800 bg-neutral-950/50 flex justify-between items-center">
             <div className="flex items-center gap-2">
                 <UserCircle className="w-6 h-6 text-emerald-400" />
-                <span className="font-bold">{session.username}</span>
+                <span className="font-bold cursor-default">{session.username}</span>
             </div>
-            <button onClick={handleLogout} className="p-2 text-neutral-400 hover:text-red-400 transition">
+            <button onClick={handleLogout} className="p-2 text-neutral-400 hover:text-red-400 transition" title="Log out">
                 <LogOut className="w-5 h-5" />
             </button>
         </div>
@@ -113,24 +141,29 @@ function App() {
                     className={`w-full text-left px-4 py-3 flex items-center gap-3 border-b border-neutral-800/50 transition-colors
                         ${selectedContact === contact ? 'bg-neutral-800' : 'hover:bg-neutral-800/50'}`}
                 >
-                    <div className="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 flex-none rounded-full bg-neutral-700 flex items-center justify-center font-bold">
                         {contact.charAt(0).toUpperCase()}
                     </div>
-                    <span className="font-medium">{contact}</span>
+                    <span className="font-medium truncate">{contact}</span>
+                    {unreadCounts[contact] > 0 && selectedContact !== contact && (
+                        <span className="ml-auto flex-none bg-emerald-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-emerald-500/20">
+                            {unreadCounts[contact]}
+                        </span>
+                    )}
                 </button>
             ))}
         </div>
       </aside>
 
       {/* Main Chat Area */}
-      <main className="flex-1 bg-neutral-950 flex flex-col relative w-full h-full">
+      <main className={`flex-1 bg-neutral-950 flex-col relative w-full h-full ${!selectedContact ? 'hidden md:flex' : 'flex'}`}>
         {selectedContact ? (
-            <ChatRoom key={selectedContact} currentUser={session.username} recipient={selectedContact} />
+            <ChatRoom key={selectedContact} currentUser={session.username} recipient={selectedContact} onBack={() => setSelectedContact(null)} />
         ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-neutral-500">
+            <div className="flex-1 flex flex-col items-center justify-center text-neutral-500 p-8 text-center bg-neutral-950/50 inset-0 absolute">
                 <MessageSquarePlus className="w-16 h-16 mb-4 opacity-20" />
                 <h2 className="text-xl font-medium">Radius Chat</h2>
-                <p className="mt-2">Select a contact or start a new conversation.</p>
+                <p className="mt-2 text-sm">Select a contact from the sidebar or start a new conversation.</p>
             </div>
         )}
       </main>

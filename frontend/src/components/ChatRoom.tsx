@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import { useChat } from '../hooks/useChat'
-import { Send, Bot, UserCircle, Signal, SignalZero, Sparkles, Check, CheckCheck } from 'lucide-react'
+import { Send, Bot, UserCircle, Signal, SignalZero, Sparkles, Check, CheckCheck, ArrowLeft } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface ChatRoomProps {
   currentUser: string
   recipient: string
+  onBack?: () => void
 }
 
-export default function ChatRoom({ currentUser, recipient }: ChatRoomProps) {
+export default function ChatRoom({ currentUser, recipient, onBack }: ChatRoomProps) {
   const { messages, sendMessage, connectionStatus, markAsRead } = useChat(currentUser, recipient)
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -42,19 +43,24 @@ export default function ChatRoom({ currentUser, recipient }: ChatRoomProps) {
   const isConnected = connectionStatus === 'Connected'
 
   return (
-    <div className="flex flex-col h-full bg-neutral-950 text-neutral-100 p-0 m-0">
+    <div className="flex flex-col h-[100dvh] bg-neutral-950 text-neutral-100 p-0 m-0">
       {/* Header */}
       <header className="flex-none bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 p-4 sticky top-0 z-10 w-full">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            {onBack && (
+               <button onClick={onBack} className="md:hidden p-2 -ml-2 text-neutral-400 hover:text-white transition rounded-full flex-none" aria-label="Back to contacts">
+                  <ArrowLeft className="w-5 h-5" />
+               </button>
+            )}
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl flex-none flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <span className="font-bold text-white">{recipient.charAt(0).toUpperCase()}</span>
             </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-white">{recipient}</h1>
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold tracking-tight text-white truncate">{recipient}</h1>
               <p className="text-xs font-medium text-emerald-400 flex items-center gap-1 mt-0.5">
-                {isConnected ? <Signal className="w-3 h-3" /> : <SignalZero className="w-3 h-3 text-red-400" />}
-                {connectionStatus}
+                {isConnected ? <Signal className="w-3 h-3 flex-none" /> : <SignalZero className="w-3 h-3 text-red-400 flex-none" />}
+                <span className="truncate">{connectionStatus}</span>
               </p>
             </div>
           </div>

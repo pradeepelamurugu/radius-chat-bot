@@ -43,7 +43,9 @@ export function useChat(currentUser: string, recipient: string) {
         } else {
             const newMsg = { ...payload, read_by: payload.read_by || [] }
             // Only add if it belongs to this conversation
-            if ((newMsg.sender === currentUser && newMsg.receiver === recipient) || (newMsg.sender === recipient && newMsg.receiver === currentUser)) {
+            if ((newMsg.sender === currentUser && newMsg.receiver === recipient) || 
+                (newMsg.sender === recipient && newMsg.receiver === currentUser) ||
+                (newMsg.sender === 'System AI' && newMsg.conversation_with === recipient)) {
                 setMessages(prev => [...prev, newMsg])
             }
         }

@@ -23,6 +23,7 @@ async def process_ai_message(message_text: str, current_user: str, conversation_
         "id": int(datetime.utcnow().timestamp()), # fake ID for unsaved AI msg
         "sender": "System AI",
         "receiver": current_user,
+        "conversation_with": conversation_with,
         "text": response,
         "timestamp": datetime.utcnow().isoformat(),
         "read_by": []

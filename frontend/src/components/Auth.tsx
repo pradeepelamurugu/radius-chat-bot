@@ -32,20 +32,26 @@ export default function Auth({ onLogin }: AuthProps) {
         throw new Error(data.detail || 'Authentication failed')
       }
 
+      const finalUsername = data.username || data.sub || username;
+
       if (isLogin) {
         onLogin(data.access_token, data.username)
       } else {
-        // Auto login after register for simplicity
+        if (finalUsername !== username) {
+           alert(`Username conflict resolved! Your unique login handle is: ${finalUsername}\n\nMake sure to share this tag with your friends so they can find you! Logging you in now...`)
+        }
+        
+        // Auto login after register
         const loginRes = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ username: finalUsername, password })
         })
         const loginData = await loginRes.json()
         if (loginRes.ok) {
           onLogin(loginData.access_token, loginData.username)
         } else {
-          setIsLogin(true) // Switch to login on error just in case
+          setIsLogin(true) // Switch to login on error
         }
       }
     } catch (err: any) {

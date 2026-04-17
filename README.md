@@ -40,7 +40,7 @@ In the frontend, the `useChat` custom hook encapsulates all WebSocket communicat
 ### 4. Why the @ai Feature?
 The Radius job description specifically highlighted experience in building "AI/LLM-powered systems (agents, tool calling, workflows)". Allowing users to mention `@ai` transforms an idle chat room into an active, intelligent workspace agent capable of assisting the user dynamically. Wait times are simulated correctly to mimic a genuine LLM payload delay.
 
-## Local Setup
+## Local Setup (Manual)
 
 ### 1. Backend
 
@@ -67,6 +67,15 @@ npm run dev
 
 The frontend will run on `http://localhost:5173`. 
 The Vite proxy handles routing any `/api/*` and `/ws/*` calls to the FastAPI backend automatically.
+
+## Docker Setup (Production-Ready)
+
+To launch the full stack instantly within isolated containers, ensure Docker is installed and running on your machine, then simply execute:
+
+```bash
+docker-compose up --build
+```
+This builds both the optimized React frontend and FastAPI backend behind an Nginx proxy. Once initialized, the full application will be accessible directly via your browser at `http://localhost:5173`.
 
 ## Running Tests
 

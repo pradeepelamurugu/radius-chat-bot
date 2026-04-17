@@ -33,14 +33,22 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 @router.post("/register", response_model=UserResponse)
 async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
-    # Check if user exists
-    result = await db.execute(select(UserModel).where(UserModel.username == user_data.username))
-    existing_user = result.scalars().first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
+    # Check if user exists, auto resolve conflict
+    base_username = user_data.username
+    new_username = base_username
     
+    import random
+    while True:
+        result = await db.execute(select(UserModel).where(UserModel.username == new_username))
+        existing_user = result.scalars().first()
+        if existing_user:
+            # Append random #1234
+            new_username = f"{base_username}#{random.randint(1000, 9999)}"
+        else:
+            break
+            
     hashed_pass = get_password_hash(user_data.password)
-    new_user = UserModel(username=user_data.username, password_hash=hashed_pass)
+    new_user = UserModel(username=new_username, password_hash=hashed_pass)
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)

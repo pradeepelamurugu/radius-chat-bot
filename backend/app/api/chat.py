@@ -14,6 +14,17 @@ from app.services.ai_service import process_ai_message
 
 router = APIRouter()
 
+@router.get("/unread", response_model=dict)
+async def get_unread_counts(user: str = Query(...), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MessageModel).where(MessageModel.receiver == user))
+    messages = result.scalars().all()
+    counts = {}
+    for msg in messages:
+        read_by = msg.read_by or []
+        if user not in read_by:
+            counts[msg.sender] = counts.get(msg.sender, 0) + 1
+    return {"counts": counts}
+
 @router.get("/history", response_model=List[MessageResponse])
 async def get_chat_history(
     user1: str = Query(...), 
