@@ -5,6 +5,7 @@ export interface Message {
   user: string
   text: string
   timestamp: string
+  read_by: string[]
 }
 
 export function useChat(username: string) {
@@ -19,14 +20,12 @@ export function useChat(username: string) {
     fetch('/api/chat/history')
       .then(res => res.json())
       .then(data => {
-        setMessages(data)
+        setMessages(data.map((m: any) => ({ ...m, read_by: m.read_by || [] })))
       })
       .catch(err => console.error("Could not fetch history", err))
 
     // Determine WS URL
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    // We use relative path but proxy handles it in dev.
-    // In prod, it connects to same host.
     const wsUrl = `${protocol}//${window.location.host}/api/chat/ws`
     
     ws.current = new WebSocket(wsUrl)
@@ -37,8 +36,13 @@ export function useChat(username: string) {
 
     ws.current.onmessage = (event) => {
       try {
-        const message = JSON.parse(event.data)
-        setMessages(prev => [...prev, message])
+        const payload = JSON.parse(event.data)
+        if (payload.type === 'message_updated') {
+            setMessages(prev => prev.map(m => m.id === payload.id ? { ...m, read_by: payload.read_by } : m))
+        } else {
+            const newMsg = { ...payload, read_by: payload.read_by || [] }
+            setMessages(prev => [...prev, newMsg])
+        }
       } catch (e) {
         console.error("Failed to parse message", e)
       }
@@ -55,9 +59,15 @@ export function useChat(username: string) {
 
   const sendMessage = useCallback((text: string) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({ user: username, text }))
+      ws.current.send(JSON.stringify({ type: 'chat', user: username, text }))
     }
   }, [username])
 
-  return { messages, sendMessage, connectionStatus }
+  const markAsRead = useCallback((messageId: number) => {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({ type: 'read', user: username, message_id: messageId }))
+      }
+  }, [username])
+
+  return { messages, sendMessage, connectionStatus, markAsRead }
 }

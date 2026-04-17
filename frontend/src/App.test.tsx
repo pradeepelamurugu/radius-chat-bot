@@ -6,9 +6,10 @@ import { vi } from 'vitest'
 vi.mock('./hooks/useChat', () => ({
   useChat: () => ({
     messages: [
-      { id: 1, user: 'System', text: 'Welcome to chat!', timestamp: new Date().toISOString() }
+      { id: 1, user: 'System', text: 'Welcome to chat!', timestamp: new Date().toISOString(), read_by: [] }
     ],
     sendMessage: vi.fn(),
+    markAsRead: vi.fn(),
     connectionStatus: 'Connected'
   })
 }))

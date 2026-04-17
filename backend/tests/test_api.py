@@ -32,3 +32,19 @@ async def test_websocket_chat(client):
         assert data["text"] == "Hello User"
         assert "timestamp" in data
 
+@pytest.mark.asyncio
+async def test_websocket_read_receipt(client):
+    with client.websocket_connect("/api/chat/ws") as websocket:
+        # Send message
+        websocket.send_json({"type": "chat", "user": "UserA", "text": "Hello"})
+        data = websocket.receive_json()
+        assert data["user"] == "UserA"
+        msg_id = data["id"]
+        
+        # Send read receipt
+        websocket.send_json({"type": "read", "user": "UserB", "message_id": msg_id})
+        update_data = websocket.receive_json()
+        
+        assert update_data["type"] == "message_updated"
+        assert update_data["id"] == msg_id
+        assert "UserB" in update_data["read_by"]

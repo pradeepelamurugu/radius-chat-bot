@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useChat } from '../hooks/useChat'
-import { Send, Bot, UserCircle, Signal, SignalZero, Sparkles } from 'lucide-react'
+import { Send, Bot, UserCircle, Signal, SignalZero, Sparkles, Check, CheckCheck } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface ChatRoomProps {
@@ -8,7 +8,7 @@ interface ChatRoomProps {
 }
 
 export default function ChatRoom({ username }: ChatRoomProps) {
-  const { messages, sendMessage, connectionStatus } = useChat(username)
+  const { messages, sendMessage, connectionStatus, markAsRead } = useChat(username)
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -18,7 +18,17 @@ export default function ChatRoom({ username }: ChatRoomProps) {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+    
+    // Auto-read receipts
+    messages.forEach(msg => {
+      // Don't mark my own messages or system messages
+      if (msg.user !== username && msg.user !== 'System' && msg.user !== 'System AI') {
+        if (!msg.read_by?.includes(username)) {
+           markAsRead(msg.id)
+        }
+      }
+    })
+  }, [messages, username, markAsRead])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,8 +104,22 @@ export default function ChatRoom({ username }: ChatRoomProps) {
                         ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/10 rounded-tr-sm' 
                         : 'bg-neutral-800 border border-neutral-700/50 text-neutral-100 rounded-tl-sm'}`}>
                     <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{msg.text}</p>
-                    <span className={`text-[10px] mt-1.5 block opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-5 ${isMe ? 'right-0 text-emerald-500' : 'left-0 text-neutral-500'}`}>
+                    <span className={`text-[10px] flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-5 min-w-max ${isMe ? 'right-0 text-emerald-500' : 'left-0 text-neutral-500'}`}>
                       {format(new Date(msg.timestamp), 'h:mm a')}
+                      {isMe && msg.read_by && msg.read_by.length > 0 && (
+                        <>
+                           <span className="opacity-50">·</span>
+                           <CheckCheck className="w-3 h-3 text-emerald-400" />
+                           <span className="text-emerald-400">Seen by {msg.read_by.join(', ')}</span>
+                        </>
+                      )}
+                      {isMe && (!msg.read_by || msg.read_by.length === 0) && (
+                        <>
+                           <span className="opacity-50">·</span>
+                           <Check className="w-3 h-3 text-neutral-500" />
+                           <span>Sent</span>
+                        </>
+                      )}
                     </span>
                   </div>
                 </div>

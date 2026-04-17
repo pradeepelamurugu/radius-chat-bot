@@ -9,6 +9,7 @@ class MessageCreate(BaseModel):
 class MessageResponse(MessageCreate):
     id: int
     timestamp: datetime
+    read_by: list[str] = []
 
     class Config:
         from_attributes = True

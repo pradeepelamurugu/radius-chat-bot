@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, JSON
 from datetime import datetime
 from app.models.database import Base
 
@@ -9,3 +9,4 @@ class MessageModel(Base):
     user = Column(String, index=True)
     text = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
+    read_by = Column(JSON, default=list)
