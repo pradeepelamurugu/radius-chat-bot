@@ -4,11 +4,12 @@ import { Send, Bot, UserCircle, Signal, SignalZero, Sparkles, Check, CheckCheck 
 import { format } from 'date-fns'
 
 interface ChatRoomProps {
-  username: string
+  currentUser: string
+  recipient: string
 }
 
-export default function ChatRoom({ username }: ChatRoomProps) {
-  const { messages, sendMessage, connectionStatus, markAsRead } = useChat(username)
+export default function ChatRoom({ currentUser, recipient }: ChatRoomProps) {
+  const { messages, sendMessage, connectionStatus, markAsRead } = useChat(currentUser, recipient)
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -22,13 +23,13 @@ export default function ChatRoom({ username }: ChatRoomProps) {
     // Auto-read receipts
     messages.forEach(msg => {
       // Don't mark my own messages or system messages
-      if (msg.user !== username && msg.user !== 'System' && msg.user !== 'System AI') {
-        if (!msg.read_by?.includes(username)) {
+      if (msg.sender !== currentUser && msg.sender !== 'System' && msg.sender !== 'System AI') {
+        if (!msg.read_by?.includes(currentUser)) {
            markAsRead(msg.id)
         }
       }
     })
-  }, [messages, username, markAsRead])
+  }, [messages, currentUser, markAsRead])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,51 +42,47 @@ export default function ChatRoom({ username }: ChatRoomProps) {
   const isConnected = connectionStatus === 'Connected'
 
   return (
-    <div className="flex flex-col h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-emerald-500/30">
+    <div className="flex flex-col h-full bg-neutral-950 text-neutral-100 p-0 m-0">
       {/* Header */}
-      <header className="flex-none bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 p-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <header className="flex-none bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 p-4 sticky top-0 z-10 w-full">
+        <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <Sparkles className="w-5 h-5 text-white" />
+              <span className="font-bold text-white">{recipient.charAt(0).toUpperCase()}</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-white">Radius Chat</h1>
+              <h1 className="text-xl font-bold tracking-tight text-white">{recipient}</h1>
               <p className="text-xs font-medium text-emerald-400 flex items-center gap-1 mt-0.5">
                 {isConnected ? <Signal className="w-3 h-3" /> : <SignalZero className="w-3 h-3 text-red-400" />}
                 {connectionStatus}
               </p>
             </div>
           </div>
-          <div className="flex items-center bg-neutral-800/50 px-3 py-1.5 rounded-full border border-neutral-700/50">
-            <UserCircle className="w-5 h-5 text-neutral-400 mr-2" />
-            <span className="text-sm font-medium text-neutral-200">{username}</span>
-          </div>
         </div>
       </header>
 
       {/* Messages Area */}
-      <main className="flex-1 overflow-y-auto p-4 scroll-smooth">
-        <div className="max-w-4xl mx-auto space-y-6 pb-4">
+      <main className="flex-1 overflow-y-auto p-4 scroll-smooth w-full">
+        <div className="space-y-6 pb-4 w-full">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-neutral-500">
               <Sparkles className="w-8 h-8 mb-3 opacity-20" />
-              <p>No messages yet. Be the first to say hi!</p>
+              <p>No messages yet with {recipient}. Say hi!</p>
               <p className="text-sm mt-1 opacity-70">Try mentioning <span className="text-emerald-400 font-mono">@ai</span> to get an automated response.</p>
             </div>
           ) : null}
 
           {messages.map((msg, idx) => {
-            const isMe = msg.user === username
-            const isSystem = msg.user === 'System' || msg.user === 'System AI'
+            const isMe = msg.sender === currentUser
+            const isSystem = msg.sender === 'System' || msg.sender === 'System AI'
             
             return (
               <div 
                 key={`${msg.id}-${idx}`} 
-                className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                className={`flex flex-col w-full ${isMe ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
               >
                 {!isMe && !isSystem && (
-                  <span className="text-xs font-medium text-neutral-400 mb-1 ml-1 pl-10">{msg.user}</span>
+                  <span className="text-xs font-medium text-neutral-400 mb-1 ml-1 pl-10">{msg.sender}</span>
                 )}
                 <div className={`flex gap-3 max-w-[80%] ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                   {/* Avatar */}
@@ -93,7 +90,7 @@ export default function ChatRoom({ username }: ChatRoomProps) {
                     ${isSystem ? 'bg-gradient-to-tr from-purple-500 to-indigo-500 shadow-lg shadow-purple-500/20' : 
                       isMe ? 'hidden' : 'bg-neutral-800 border border-neutral-700'}`}>
                     {isSystem ? <Bot className="w-4 h-4 text-white" /> : 
-                     !isMe ? <span className="text-xs font-bold text-neutral-300">{msg.user.charAt(0).toUpperCase()}</span> : null}
+                     !isMe ? <span className="text-xs font-bold text-neutral-300">{msg.sender.charAt(0).toUpperCase()}</span> : null}
                   </div>
 
                   {/* Bubble */}
@@ -110,7 +107,7 @@ export default function ChatRoom({ username }: ChatRoomProps) {
                         <>
                            <span className="opacity-50">·</span>
                            <CheckCheck className="w-3 h-3 text-emerald-400" />
-                           <span className="text-emerald-400">Seen by {msg.read_by.join(', ')}</span>
+                           <span className="text-emerald-400">Seen</span>
                         </>
                       )}
                       {isMe && (!msg.read_by || msg.read_by.length === 0) && (
@@ -131,33 +128,31 @@ export default function ChatRoom({ username }: ChatRoomProps) {
       </main>
 
       {/* Input Area */}
-      <footer className="flex-none bg-neutral-900/90 backdrop-blur-lg border-t border-neutral-800 p-4 pb-8 sm:pb-4">
-        <div className="max-w-4xl mx-auto">
-          <form 
-            onSubmit={handleSubmit}
-            className="relative flex items-center bg-neutral-950 border border-neutral-700 rounded-2xl focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500/50 transition-all shadow-inner"
+      <footer className="flex-none bg-neutral-900/90 backdrop-blur-lg border-t border-neutral-800 p-4 pb-8 sm:pb-4 w-full">
+        <form 
+          onSubmit={handleSubmit}
+          className="relative flex items-center bg-neutral-950 border border-neutral-700 rounded-2xl focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500/50 transition-all shadow-inner w-full"
+        >
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder={`Message ${recipient}...`}
+            className="w-full bg-transparent px-5 py-4 pl-5 pr-14 text-neutral-100 placeholder:text-neutral-600 focus:outline-none"
+            autoFocus
+            disabled={!isConnected}
+          />
+          <button
+            type="submit"
+            disabled={!inputValue.trim() || !isConnected}
+            className={`absolute right-2 p-2 rounded-xl transition-all duration-200 
+              ${inputValue.trim() && isConnected 
+                ? 'bg-emerald-500 text-white hover:bg-emerald-400 hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/25' 
+                : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
           >
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your message... (mention @ai to talk to bot)"
-              className="w-full bg-transparent px-5 py-4 pl-5 pr-14 text-neutral-100 placeholder:text-neutral-600 focus:outline-none"
-              autoFocus
-              disabled={!isConnected}
-            />
-            <button
-              type="submit"
-              disabled={!inputValue.trim() || !isConnected}
-              className={`absolute right-2 p-2 rounded-xl transition-all duration-200 
-                ${inputValue.trim() && isConnected 
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-400 hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/25' 
-                  : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
-            >
-              <Send className="w-5 h-5 -ml-0.5 mt-0.5" />
-            </button>
-          </form>
-        </div>
+            <Send className="w-5 h-5 -ml-0.5 mt-0.5" />
+          </button>
+        </form>
       </footer>
     </div>
   )
