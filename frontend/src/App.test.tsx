@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import App from './App'
-import { vi } from 'vitest'
+import { vi, describe, it, expect } from 'vitest'
 
 // Mock the whole useChat hook
 vi.mock('./hooks/useChat', () => ({

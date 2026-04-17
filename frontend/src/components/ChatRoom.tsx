@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useChat } from '../hooks/useChat'
-import { Send, Bot, UserCircle, Signal, SignalZero, Sparkles, Check, CheckCheck, ArrowLeft } from 'lucide-react'
+import { Send, Bot, Signal, SignalZero, Sparkles, Check, CheckCheck, ArrowLeft } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface ChatRoomProps {
